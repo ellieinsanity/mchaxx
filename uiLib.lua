@@ -1,4 +1,12 @@
 local runService = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local coreGui = game:GetService("CoreGui")
+local players = game:GetService("Players")
+
+local localPlayer = players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/ellieinsanity/skk/refs/heads/main/signal.lua"))()
 
 if (not isfile("mchaxx.rbxm")) then
 	writefile("mchaxx.rbxm", http_request({
@@ -7,12 +15,12 @@ if (not isfile("mchaxx.rbxm")) then
 	}).Body)
 end
 
-if (Game:GetService("CoreGui"):FindFirstChild("mchaxx")) then
-	Game:GetService("CoreGui").mchaxx:Destroy()
+if (coreGui:FindFirstChild("mchaxx")) then
+	coreGui.mchaxx:Destroy()
 end
 local gui = game:GetObjects(getcustomasset("mchaxx.rbxm"))[1]
 gui.Name = "mchaxx"
-gui.Parent = game:GetService("CoreGui")
+gui.Parent = coreGui
 local font = loadstring(game:HttpGet("https://raw.githubusercontent.com/ellieinsanity/mchaxx/refs/heads/main/fontRenderer.lua"))()
 
 local modTemp = gui:WaitForChild("modTemp")
@@ -24,6 +32,13 @@ modTemp.modules.template.Parent = nil
 local moduleListCount, lastFrame = 0, nil
 local ui, savedPos = {}, {}
 ui.__index = ui
+
+-- create modal button
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(1, 0, 1, 0)
+textButton.Modal = true
+textButton.BackgroundTransparency = 1
+textButton.Text = ""
 
 ui.createModuleList = function(name)
 	name = tostring(name)
@@ -152,6 +167,32 @@ function ui:editColor(frame, to, letters)
 	end
 end
 
--- default modules
+local uiOpen = true
+local originalMin, originalMax = localPlayer.CameraMinZoomDistance, localPlayer.CameraMaxZoomDistance
 
-return ui
+local function toggleUi()
+	uiOpen = not uiOpen
+	for _,frame in gui:GetChildren() do
+		frame.Visible = uiOpen
+	end
+	localPlayer.CameraMode = uiOpen and "Classic" or "LockFirstPerson"
+	localPlayer.CameraMaxZoomDistance = uiOpen and 20 or originalMax
+	localPlayer.CameraMinZoomDistance = uiOpen and 20 or originalMin
+end
+
+signal.createSignal(uis.InputBegan:connect(function(input, gpe)
+	if (gpe) then
+		return
+	end
+	if (input.KeyCode == Enum.KeyCode.Insert) then
+		toggleUi()
+	elseif (input.KeyCode == Enum.KeyCode.P and uiOpen) then
+		-- fix layout
+		for i, v in savedPos do
+			i.Position = v
+		end
+	end
+end))
+
+
+return { ui = ui, signal = signal }
