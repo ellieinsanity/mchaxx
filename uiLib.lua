@@ -7,7 +7,11 @@ if (not isfile("mchaxx.rbxm")) then
 	}).Body)
 end
 
+if (Game:GetService("CoreGui"):FindFirstChild("mchaxx")) then
+	Game:GetService("CoreGui").mchaxx:Destroy()
+end
 local gui = game:GetObjects(getcustomasset("mchaxx.rbxm"))[1]
+gui.Name = "mchaxx"
 gui.Parent = game:GetService("CoreGui")
 local font = loadstring(game:HttpGet("https://raw.githubusercontent.com/ellieinsanity/mchaxx/refs/heads/main/fontRenderer.lua"))()
 
